@@ -38,6 +38,7 @@ dependencies = [
     "scikit-learn>=1.7.0",
     'gymnasium',
     "pettingzoo[all]",
+    "stable-baselines3[extra]",
     'torchrl',
     'benchmarl',
     'vmas',
