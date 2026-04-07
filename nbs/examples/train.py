@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import multigrid.rllib
+# import multigrid.rllib
+from multigrid.wrappers.external import RLlibWrapper
+
 import os
 import random
 import ray
