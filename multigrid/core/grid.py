@@ -64,8 +64,8 @@ class Grid:
         self.state[...] = WorldObj.empty()
 
 # %% ../../nbs/01f_core.grid.ipynb #9a226f40
-@patch
 @cached_property
+@patch
 def width(self: Grid) -> int:
     """
     Width of the grid.
@@ -81,8 +81,8 @@ def height(self: Grid) -> int:
 
 
 # %% ../../nbs/01f_core.grid.ipynb #68aebafc
-@patch
 @property
+@patch
 def grid(self: Grid) -> list[WorldObj | None]:
     """
     Return a list of all world objects in the grid.
@@ -222,8 +222,8 @@ def wall_rect(self: Grid, x: int, y: int, w: int, h: int):
 
 
 # %% ../../nbs/01f_core.grid.ipynb #d073c6b9
-@patch
 @classmethod
+@patch
 def render_tile(
     cls: type[Grid],
     obj: WorldObj | None = None,
@@ -360,8 +360,8 @@ def encode(self: Grid, vis_mask: ndarray[np.bool] | None = None) -> ndarray[np.i
 
 
 # %% ../../nbs/01f_core.grid.ipynb #cbac6cdb
-@patch
 @staticmethod
+@patch
 def decode(array: ndarray[np.int]) -> tuple['Grid', ndarray[np.bool]]:
     """
     Decode an array grid encoding back into a `Grid` instance.

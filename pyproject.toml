@@ -45,6 +45,7 @@ dependencies = [
     'torchrl',
     'benchmarl',
     'vmas',
+    'ray[rllib]',
     'loguru',
     'tabulate',
     'python-dotenv',

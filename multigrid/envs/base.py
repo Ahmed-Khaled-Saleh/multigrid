@@ -213,8 +213,8 @@ class MultiGridEnv(gym.Env, RandomMixin, ABC):
         self.failure_termination_mode = failure_termination_mode
 
 # %% ../../nbs/02a_envs.base.ipynb #39603a6d
-@patch
 @property
+@patch
 def observation_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
     """
     Return the joint observation space of all agents.
@@ -224,8 +224,8 @@ def observation_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
         for agent in self.agents
     })
 
-@patch
 @property
+@patch
 def action_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
     """
     Return the joint action space of all agents.
@@ -236,8 +236,8 @@ def action_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
     })
 
 # %% ../../nbs/02a_envs.base.ipynb #3320425a
-@patch
 @abstractmethod
+@patch
 def _gen_grid(self: MultiGridEnv, width: int, height: int):
     """
     :meta public:
