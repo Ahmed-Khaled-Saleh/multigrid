@@ -222,10 +222,9 @@ def wall_rect(self: Grid, x: int, y: int, w: int, h: int):
 
 
 # %% ../../nbs/01f_core.grid.ipynb #d073c6b9
-@classmethod
-@patch
+@patch(cls_method= True)
 def render_tile(
-    cls: type[Grid],
+    cls: Grid,
     obj: WorldObj | None = None,
     agent: Agent | None = None,
     highlight: bool = False,
