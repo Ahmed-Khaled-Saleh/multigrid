@@ -169,7 +169,7 @@ class OneHotObsWrapper(ObservationWrapper):
 
     @staticmethod
     @nb.njit(cache=True)
-    def one_hot(x: ndarray[np.int], dim_sizes: ndarray[np.int]) -> ndarray[np.uint8]:
+    def one_hot(x: ndarray[np.int64], dim_sizes: ndarray[np.int64]) -> ndarray[np.uint8]:
         """
         Return a one-hot encoding of a 3D integer array,
         where each 2D slice is encoded separately.

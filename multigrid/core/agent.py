@@ -9,6 +9,7 @@ import numpy as np
 import functools
 from gymnasium import spaces
 from numpy.typing import ArrayLike, NDArray as ndarray
+from fastcore.utils import patch
 
 from .actions import Action
 from .constants import Color, Direction, Type, TILE_PIXELS
@@ -153,7 +154,7 @@ class AgentState(np.ndarray):
         self[..., AgentState.COLOR] = np.vectorize(lambda c: Color(c).to_index())(value)
 
     @property
-    def dir(self) -> Direction | ndarray[np.int]:
+    def dir(self) -> Direction | ndarray[np.int64]:
         """
         Return the agent direction.
         """
@@ -168,7 +169,7 @@ class AgentState(np.ndarray):
         self[..., AgentState.DIR] = value
 
     @property
-    def pos(self) -> tuple[int, int] | ndarray[np.int]:
+    def pos(self) -> tuple[int, int] | ndarray[np.int64]:
         """
         Return the agent's (x, y) position.
         """
@@ -183,7 +184,7 @@ class AgentState(np.ndarray):
         self[..., AgentState.POS] = value
 
     @property
-    def terminated(self) -> bool | ndarray[np.bool]:
+    def terminated(self) -> bool | ndarray[np.bool_]:
         """
         Return whether the agent has terminated.
         """
@@ -314,31 +315,40 @@ class Agent:
     carrying = PropertyAlias(
         'state', 'carrying', doc='Alias for :attr:`AgentState.carrying`.')
 
-    @property
-    def front_pos(self) -> tuple[int, int]:
-        """
-        Get the position of the cell that is directly in front of the agent.
-        """
-        agent_dir = self.state._view[AgentState.DIR]
-        agent_pos = self.state._view[AgentState.POS]
-        return front_pos(*agent_pos, agent_dir)
+    
+    
 
-    def reset(self, mission: Mission = Mission('maximize reward')):
-        """
-        Reset the agent to an initial state.
+# %% ../../nbs/01e_core.agent.ipynb #1d896c33
+@patch(as_prop= True)
+def front_pos(self: Agent) -> tuple[int, int]:
+    """
+    Get the position of the cell that is directly in front of the agent.
+    """
+    agent_dir = self.state._view[AgentState.DIR]
+    agent_pos = self.state._view[AgentState.POS]
+    return front_pos(*agent_pos, agent_dir)
 
-        Parameters
-        ----------
-        mission : Mission
-            Mission string to use for the new episode
-        """
-        self.mission = mission
-        self.state.pos = (-1, -1)
-        self.state.dir = -1
-        self.state.terminated = False
-        self.state.carrying = None
 
-    def encode(self) -> tuple[int, int, int]:
+# %% ../../nbs/01e_core.agent.ipynb #7d9e4ef9
+@patch
+def reset(self: Agent, mission: Mission = Mission('maximize reward')):
+    """
+    Reset the agent to an initial state.
+
+    Parameters
+    ----------
+    mission : Mission
+        Mission string to use for the new episode
+    """
+    self.mission = mission
+    self.state.pos = (-1, -1)
+    self.state.dir = -1
+    self.state.terminated = False
+    self.state.carrying = None
+
+# %% ../../nbs/01e_core.agent.ipynb #ff4461cd
+@patch
+def encode(self: Agent) -> tuple[int, int, int]:
         """
         Encode a description of this agent as a 3-tuple of integers.
 
@@ -353,23 +363,26 @@ class Agent:
         """
         return (Type.agent.to_index(), self.state.color.to_index(), self.state.dir)
 
-    def render(self, img: ndarray[np.uint8]):
-        """
-        Draw the agent.
 
-        Parameters
-        ----------
-        img : ndarray[int] of shape (width, height, 3)
-            RGB image array to render agent on
-        """
-        tri_fn = point_in_triangle(
-            (0.12, 0.19),
-            (0.87, 0.50),
-            (0.12, 0.81),
-        )
+# %% ../../nbs/01e_core.agent.ipynb #37a6129c
+@patch
+def render(self: Agent, img: ndarray[np.uint8]):
+    """
+    Draw the agent.
 
-        # Rotate the agent based on its direction
-        tri_fn = rotate_fn(tri_fn, cx=0.5, cy=0.5, theta=0.5 * np.pi * self.state.dir)
-        fill_coords(img, tri_fn, self.state.color.rgb())
+    Parameters
+    ----------
+    img : ndarray[int] of shape (width, height, 3)
+        RGB image array to render agent on
+    """
+    tri_fn = point_in_triangle(
+        (0.12, 0.19),
+        (0.87, 0.50),
+        (0.12, 0.81),
+    )
+
+    # Rotate the agent based on its direction
+    tri_fn = rotate_fn(tri_fn, cx=0.5, cy=0.5, theta=0.5 * np.pi * self.state.dir)
+    fill_coords(img, tri_fn, self.state.color.rgb())
 
 

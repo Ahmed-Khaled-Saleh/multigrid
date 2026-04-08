@@ -212,9 +212,33 @@ class MultiGridEnv(gym.Env, RandomMixin, ABC):
         self.success_termination_mode = success_termination_mode
         self.failure_termination_mode = failure_termination_mode
 
-# %% ../../nbs/02a_envs.base.ipynb #39603a6d
-@property
-@patch
+
+    @abstractmethod
+    def _gen_grid(self: MultiGridEnv, width: int, height: int):
+        """
+        :meta public:
+
+        Generate the grid for a new episode.
+
+        This method should:
+
+        * Set ``self.grid`` and populate it with :class:`.WorldObj` instances
+        * Set the positions and directions of each agent
+
+        Parameters
+        ----------
+        width : int
+            Width of the grid
+        height : int
+            Height of the grid
+        """
+        pass
+
+
+    
+
+# %% ../../nbs/02a_envs.base.ipynb #a411080e
+@patch(as_prop=True)
 def observation_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
     """
     Return the joint observation space of all agents.
@@ -224,8 +248,7 @@ def observation_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
         for agent in self.agents
     })
 
-@property
-@patch
+@patch(as_prop=True)
 def action_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
     """
     Return the joint action space of all agents.
@@ -234,29 +257,6 @@ def action_space(self: MultiGridEnv) -> spaces.Dict[AgentID, spaces.Space]:
         agent.index: agent.action_space
         for agent in self.agents
     })
-
-# %% ../../nbs/02a_envs.base.ipynb #3320425a
-@abstractmethod
-@patch
-def _gen_grid(self: MultiGridEnv, width: int, height: int):
-    """
-    :meta public:
-
-    Generate the grid for a new episode.
-
-    This method should:
-
-    * Set ``self.grid`` and populate it with :class:`.WorldObj` instances
-    * Set the positions and directions of each agent
-
-    Parameters
-    ----------
-    width : int
-        Width of the grid
-    height : int
-        Height of the grid
-    """
-    pass
 
 # %% ../../nbs/02a_envs.base.ipynb #b4118899
 @patch
@@ -279,8 +279,8 @@ def reset(
     infos : dict[AgentID, dict[str, Any]]
         Additional information for each agent
     """
-    super().reset(seed=seed, **kwargs)
-
+    # super().reset(seed=seed, **kwargs)
+    gym.Env.reset(self, seed=seed, **kwargs)
     # Reset agents
     self.mission_space.seed(seed)
     self.mission = self.mission_space.sample()
@@ -366,7 +366,6 @@ def step(
 
 # %% ../../nbs/02a_envs.base.ipynb #472dc938
 @patch
-
 def gen_obs(self: MultiGridEnv) -> dict[AgentID, ObsType]:
     """
     Generate observations for each agent (partially observable, low-res encoding).
@@ -513,7 +512,6 @@ def handle_actions(
 
 # %% ../../nbs/02a_envs.base.ipynb #95629192
 @patch
-
 def on_success(
     self: MultiGridEnv,
     agent: Agent,
@@ -657,72 +655,72 @@ def _reward(self: MultiGridEnv) -> float:
 # %% ../../nbs/02a_envs.base.ipynb #b8e8029e
 @patch
 def place_obj(
-        self: MultiGridEnv,
-        obj: WorldObj | None,
-        top: tuple[int, int] = None,
-        size: tuple[int, int] = None,
-        reject_fn: Callable[[MultiGridEnv, tuple[int, int]], bool] | None = None,
-        max_tries=math.inf) -> tuple[int, int]:
-        """
-        Place an object at an empty position in the grid.
+    self: MultiGridEnv,
+    obj: WorldObj | None,
+    top: tuple[int, int] = None,
+    size: tuple[int, int] = None,
+    reject_fn: Callable[[MultiGridEnv, tuple[int, int]], bool] | None = None,
+    max_tries=math.inf) -> tuple[int, int]:
+    """
+    Place an object at an empty position in the grid.
 
-        Parameters
-        ----------
-        obj: WorldObj
-            Object to place in the grid
-        top: tuple[int, int]
-            Top-left position of the rectangular area where to place the object
-        size: tuple[int, int]
-            Width and height of the rectangular area where to place the object
-        reject_fn: Callable(env, pos) -> bool
-            Function to filter out potential positions
-        max_tries: int
-            Maximum number of attempts to place the object
-        """
-        if top is None:
-            top = (0, 0)
-        else:
-            top = (max(top[0], 0), max(top[1], 0))
+    Parameters
+    ----------
+    obj: WorldObj
+        Object to place in the grid
+    top: tuple[int, int]
+        Top-left position of the rectangular area where to place the object
+    size: tuple[int, int]
+        Width and height of the rectangular area where to place the object
+    reject_fn: Callable(env, pos) -> bool
+        Function to filter out potential positions
+    max_tries: int
+        Maximum number of attempts to place the object
+    """
+    if top is None:
+        top = (0, 0)
+    else:
+        top = (max(top[0], 0), max(top[1], 0))
 
-        if size is None:
-            size = (self.grid.width, self.grid.height)
+    if size is None:
+        size = (self.grid.width, self.grid.height)
 
-        num_tries = 0
+    num_tries = 0
 
-        while True:
-            # This is to handle with rare cases where rejection sampling
-            # gets stuck in an infinite loop
-            if num_tries > max_tries:
-                raise RecursionError("rejection sampling failed in place_obj")
+    while True:
+        # This is to handle with rare cases where rejection sampling
+        # gets stuck in an infinite loop
+        if num_tries > max_tries:
+            raise RecursionError("rejection sampling failed in place_obj")
 
-            num_tries += 1
+        num_tries += 1
 
-            pos = (
-                self._rand_int(top[0], min(top[0] + size[0], self.grid.width)),
-                self._rand_int(top[1], min(top[1] + size[1], self.grid.height)),
-            )
+        pos = (
+            self._rand_int(top[0], min(top[0] + size[0], self.grid.width)),
+            self._rand_int(top[1], min(top[1] + size[1], self.grid.height)),
+        )
 
-            # Don't place the object on top of another object
-            if self.grid.get(*pos) is not None:
-                continue
+        # Don't place the object on top of another object
+        if self.grid.get(*pos) is not None:
+            continue
 
-            # Don't place the object where agents are
-            if np.bitwise_and.reduce(self.agent_states.pos == pos, axis=1).any():
-                continue
+        # Don't place the object where agents are
+        if np.bitwise_and.reduce(self.agent_states.pos == pos, axis=1).any():
+            continue
 
-            # Check if there is a filtering criterion
-            if reject_fn and reject_fn(self, pos):
-                continue
+        # Check if there is a filtering criterion
+        if reject_fn and reject_fn(self, pos):
+            continue
 
-            break
+        break
 
-        self.grid.set(pos[0], pos[1], obj)
+    self.grid.set(pos[0], pos[1], obj)
 
-        if obj is not None:
-            obj.init_pos = pos
-            obj.cur_pos = pos
+    if obj is not None:
+        obj.init_pos = pos
+        obj.cur_pos = pos
 
-        return pos
+    return pos
 
 
 
@@ -757,7 +755,7 @@ def place_agent(
 
     return pos
 
-# %% ../../nbs/02a_envs.base.ipynb #c9f8eeee
+# %% ../../nbs/02a_envs.base.ipynb #bc65cf6c
 @patch
 def get_pov_render(self: MultiGridEnv, *args, **kwargs):
     """
@@ -767,6 +765,7 @@ def get_pov_render(self: MultiGridEnv, *args, **kwargs):
         "POV rendering not supported for multiagent environments."
     )
 
+# %% ../../nbs/02a_envs.base.ipynb #c9f8eeee
 @patch
 def get_full_render(self: MultiGridEnv, highlight: bool, tile_size: int):
     """

@@ -1,7 +1,7 @@
 import gymnasium as gym
 import multigrid.envs
 
-env = gym.make('MultiGrid-RedBlueDoors-8x8-v0', agents=2, render_mode='human')
+env = gym.make('MultiGrid-Playground-v0', agents=2, render_mode='human')
 
 observations, infos = env.reset()
 while not env.unwrapped.is_done():

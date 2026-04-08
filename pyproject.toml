@@ -24,6 +24,7 @@ dependencies = [
     'nbdev',
     'notebook',
     'jupyterlab',
+    'ipdb',
     'pygame',
     'torch',
     'torchvision',

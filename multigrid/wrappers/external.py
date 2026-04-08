@@ -25,7 +25,7 @@ from .base import OneHotObsWrapper
 
 
 # %% auto #0
-__all__ = ['PettingZooWrapper', 'to_pettingzoo_env', 'RLlibWrapper', 'to_rllib_env']
+__all__ = ['PettingZooWrapper', 'to_pettingzoo_env', 'TorchRLPettingZooWrapper', 'RLlibWrapper', 'to_rllib_env']
 
 # %% ../../nbs/03b_wrappers.external.ipynb #b6c1578d
 class PettingZooWrapper(ParallelEnv):
@@ -42,15 +42,19 @@ class PettingZooWrapper(ParallelEnv):
         self.close = self.env.close
         self.metadata = {}
 
+    # @property
+    def is_done(self) -> bool:
+        return self.env.unwrapped.is_done()
+    
     @property
     def agents(self) -> list[AgentID]:
-        if self.env.is_done():
+        if self.env.unwrapped.is_done():
             return []
-        return [agent.index for agent in self.env.agents if not agent.terminated]
+        return [agent.index for agent in self.env.unwrapped.agents if not agent.terminated]
 
     @property
     def possible_agents(self) -> list[AgentID]:
-        return [agent.index for agent in self.env.agents]
+        return [agent.index for agent in self.env.unwrapped.agents]
 
     @property
     def observation_spaces(self) -> dict[AgentID, spaces.Space]:
@@ -107,6 +111,79 @@ def to_pettingzoo_env(
     PettingZooEnv.metadata = metadata
     return PettingZooEnv
 
+
+# %% ../../nbs/03b_wrappers.external.ipynb #fda9038e
+class TorchRLPettingZooWrapper(PettingZooWrapper):
+    """
+    Extends PettingZooWrapper with string agent IDs required by TorchRL.
+    """
+    def __init__(self, env: MultiGridEnv):
+        # Don't call super().__init__() — we don't want the instance attribute assignments
+        self.env = env
+        self.metadata = {}
+
+    def _remap_keys(self, d: dict) -> dict:
+        """Convert integer agent keys to string agent IDs."""
+        return {self._agent_id(k): v for k, v in d.items()}
+
+    def reset(self, seed=None, options=None):
+        observations, infos = self.env.reset(seed=seed, options=options)
+        obs_remapped = self._remap_keys(observations)
+        
+        # TorchRL expects {agent_id: {}} for each agent, not just {}
+        if not infos:
+            infos_remapped = {self._agent_id(i): {} for i in range(len(observations))}
+        else:
+            infos_remapped = self._remap_keys(infos)
+        
+        return obs_remapped, infos_remapped
+    
+    def step(self, actions):
+        # Remap string agent IDs back to integer keys for the underlying env
+        int_actions = {self._agent_index(k): v for k, v in actions.items()}
+        observations, rewards, terminations, truncations, infos = self.env.step(int_actions)
+        return (
+            self._remap_keys(observations),
+            self._remap_keys(rewards),
+            self._remap_keys(terminations),
+            self._remap_keys(truncations),
+            self._remap_keys(infos),
+        )
+
+    def _agent_id(self, index: int) -> str:
+        return f"agent_{index}"
+
+    def _agent_index(self, agent_id: str) -> int:
+        return int(agent_id.split("_")[1])
+
+    @property
+    def agents(self) -> list[AgentID]:
+        if self.env.unwrapped.is_done():
+            return []
+        return [self._agent_id(agent.index) 
+                for agent in self.env.unwrapped.agents 
+                if not agent.terminated]
+
+    @property
+    def possible_agents(self) -> list[AgentID]:
+        return [self._agent_id(agent.index) 
+                for agent in self.env.unwrapped.agents]
+
+    @property
+    def observation_spaces(self) -> dict[AgentID, spaces.Space]:
+        return {self._agent_id(i): space 
+                for i, space in dict(self.env.observation_space).items()}
+
+    @property
+    def action_spaces(self) -> dict[AgentID, spaces.Space]:
+        return {self._agent_id(i): space 
+                for i, space in dict(self.env.action_space).items()}
+
+    def observation_space(self, agent_id: AgentID) -> spaces.Space:
+        return self.env.observation_space[self._agent_index(agent_id)]
+
+    def action_space(self, agent_id: AgentID) -> spaces.Space:
+        return self.env.action_space[self._agent_index(agent_id)]
 
 # %% ../../nbs/03b_wrappers.external.ipynb #553cea40
 class RLlibWrapper(MultiAgentEnv):

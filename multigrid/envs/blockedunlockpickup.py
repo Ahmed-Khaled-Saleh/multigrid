@@ -134,7 +134,9 @@ class BlockedUnlockPickupEnv(RoomGrid):
             mission_func=self._gen_mission,
             ordered_placeholders=[list(Color), [Type.box, Type.key]],
         )
-        super().__init__(
+        # super()
+        RoomGrid.__init__(
+            self= self,
             mission_space=mission_space,
             num_rows=1,
             num_cols=2,
@@ -145,13 +147,22 @@ class BlockedUnlockPickupEnv(RoomGrid):
             **kwargs,
         )
 
+    
+
+    @staticmethod
+    def _gen_mission(color: str, obj_type: str):
+        return f"pick up the {color} {obj_type}"
+
+    def _gen_grid(self, width, height):
+        pass
+
 # %% ../../nbs/02e_envs.blockedunlockpickup.ipynb #16b13f48
 @patch
 def step(self: BlockedUnlockPickupEnv, actions):
     """
     :meta private:
     """
-    obs, reward, terminated, truncated, info = super().step(actions)
+    obs, reward, terminated, truncated, info = RoomGrid.step(self, actions)
     for agent in self.agents:
         if agent.state.carrying == self.obj:
             self.on_success(agent, reward, terminated)

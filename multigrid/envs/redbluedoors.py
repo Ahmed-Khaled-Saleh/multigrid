@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from fastcore.utils import patch
 
-from .. import MultiGridEnv
+from .base import MultiGridEnv
 from ..core import Action, Grid, MissionSpace
 from ..core.constants import Color
 from ..core.world_object import Door
@@ -150,6 +150,10 @@ class RedBlueDoorsEnv(MultiGridEnv):
         )
         
 
+    def _gen_grid(self, width, height):
+        pass
+
+
 # %% ../../nbs/02c_envs.redbluedoors.ipynb #6f866217
 @patch
 def _gen_grid(self: RedBlueDoorsEnv, width, height):
@@ -187,7 +191,7 @@ def step(self: RedBlueDoorsEnv, actions):
     """
     :meta private:
     """
-    obs, reward, terminated, truncated, info = super().step(actions)
+    obs, reward, terminated, truncated, info = MultiGridEnv.step(self, actions)#super().step(actions)
 
     for agent_id, action in actions.items():
         if action == Action.toggle:

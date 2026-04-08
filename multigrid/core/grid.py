@@ -26,7 +26,7 @@ from multigrid.utils.rendering import (
 
 
 # %% auto #0
-__all__ = ['Grid', 'height']
+__all__ = ['Grid']
 
 # %% ../../nbs/01f_core.grid.ipynb #afb69c44
 class Grid:
@@ -60,29 +60,26 @@ class Grid:
         assert width >= 3
         assert height >= 3
         self.world_objects: dict[tuple[int, int], WorldObj] = {} # indexed by location
-        self.state: ndarray[np.int] = np.zeros((width, height, WorldObj.dim), dtype=int)
+        self.state: ndarray[np.int64] = np.zeros((width, height, WorldObj.dim), dtype=np.int64)
         self.state[...] = WorldObj.empty()
+    
+    @cached_property
+    def width(self: Grid) -> int:
+        """
+        Width of the grid.
+        """
+        return self.state.shape[0]
 
-# %% ../../nbs/01f_core.grid.ipynb #9a226f40
-@cached_property
-@patch
-def width(self: Grid) -> int:
-    """
-    Width of the grid.
-    """
-    return self.state.shape[0]
-
-@cached_property
-def height(self: Grid) -> int:
-    """
-    Height of the grid.
-    """
-    return self.state.shape[1]
+    @cached_property
+    def height(self: Grid) -> int:
+        """
+        Height of the grid.
+        """
+        return self.state.shape[1]
 
 
 # %% ../../nbs/01f_core.grid.ipynb #68aebafc
-@property
-@patch
+@patch(as_prop=True)
 def grid(self: Grid) -> list[WorldObj | None]:
     """
     Return a list of all world objects in the grid.
@@ -291,7 +288,7 @@ def render(
     self: Grid,
     tile_size: int,
     agents: Iterable[Agent] = (),
-    highlight_mask: ndarray[np.bool] | None = None) -> ndarray[np.uint8]:
+    highlight_mask: ndarray[np.bool_] | None = None) -> ndarray[np.uint8]:
     """
     Render this grid at a given scale.
 
@@ -341,7 +338,7 @@ def render(
 
 # %% ../../nbs/01f_core.grid.ipynb #cab17c52
 @patch
-def encode(self: Grid, vis_mask: ndarray[np.bool] | None = None) -> ndarray[np.int]:
+def encode(self: Grid, vis_mask: ndarray[np.bool_] | None = None) -> ndarray[np.int64]:
     """
     Produce a compact numpy encoding of the grid.
 
@@ -359,9 +356,8 @@ def encode(self: Grid, vis_mask: ndarray[np.bool] | None = None) -> ndarray[np.i
 
 
 # %% ../../nbs/01f_core.grid.ipynb #cbac6cdb
-@staticmethod
-@patch
-def decode(array: ndarray[np.int]) -> tuple['Grid', ndarray[np.bool]]:
+@patch(cls_method=True)
+def decode(cls: Grid, array: ndarray[np.int64]) -> tuple['Grid', ndarray[np.bool_]]:
     """
     Decode an array grid encoding back into a `Grid` instance.
 

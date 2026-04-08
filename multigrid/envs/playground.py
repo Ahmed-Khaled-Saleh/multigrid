@@ -112,7 +112,9 @@ class PlaygroundEnv(RoomGrid):
         **kwargs
             See :attr:`multigrid.base.MultiGridEnv.__init__`
         """
-        super().__init__(
+        # super()
+        RoomGrid.__init__(
+            self= self,
             mission_space=MissionSpace.from_string(""),
             num_rows=num_rows,
             num_cols=num_cols,
@@ -120,6 +122,9 @@ class PlaygroundEnv(RoomGrid):
             max_steps=max_steps,
             **kwargs,
         )
+        
+    def _gen_grid(self, width, height):
+        pass
 
 # %% ../../nbs/02g_envs.playground.ipynb #e1895990
 @patch
@@ -127,7 +132,8 @@ def _gen_grid(self: PlaygroundEnv, width, height):
     """
     :meta private:
     """
-    super()._gen_grid(width, height)
+    # super()
+    RoomGrid._gen_grid(self, width, height)
     self.connect_all()
 
     # Place random objects in the world

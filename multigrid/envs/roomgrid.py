@@ -20,7 +20,7 @@ from .base import MultiGridEnv
 
 
 # %% auto #0
-__all__ = ['T', 'bfs', 'reject_next_to', 'Room']
+__all__ = ['T', 'bfs', 'reject_next_to', 'Room', 'RoomGrid']
 
 # %% ../../nbs/02d_envs.roomgrid.ipynb #c6b9270a
 T = TypeVar('T')
@@ -89,15 +89,18 @@ class Room:
         # List of objects contained in this room
         self.objs = []
 
-    @property
-    def locked(self) -> bool:
-        """
-        Return whether this room is behind a locked door.
-        """
-        return any(door and door.is_locked for door in self.doors.values())
-
+    
     
    
+
+# %% ../../nbs/02d_envs.roomgrid.ipynb #c878220f
+@patch(as_prop=True)
+def locked(self: Room) -> bool:
+    """
+    Return whether this room is behind a locked door.
+    """
+    return any(door and door.is_locked for door in self.doors.values())
+
 
 # %% ../../nbs/02d_envs.roomgrid.ipynb #ddd36dc0
 @patch
@@ -158,7 +161,6 @@ def pos_inside(self: Room, x: int, y: int) -> bool:
 
 
 # %% ../../nbs/02d_envs.roomgrid.ipynb #487be306
-@patch
 class RoomGrid(MultiGridEnv):
     """
     Environment with multiple rooms and random objects.
@@ -191,7 +193,8 @@ class RoomGrid(MultiGridEnv):
         self.num_cols = num_cols
         height = (room_size - 1) * num_rows + 1
         width = (room_size - 1) * num_cols + 1
-        super().__init__(width=width, height=height, **kwargs)
+        #super().__init__(width=width, height=height, **kwargs)
+        MultiGridEnv.__init__(self= self, width=width, height=height, **kwargs)
 
 # %% ../../nbs/02d_envs.roomgrid.ipynb #f712dfcd
 @patch
@@ -436,7 +439,8 @@ def place_agent(
 
     # Find a position that is not right in front of an object
     while True:
-        super().place_agent(agent, room.top, room.size, rand_dir, max_tries=1000)
+        # super().place_agent(agent, room.top, room.size, rand_dir, max_tries=1000)
+        MultiGridEnv.place_agent(self, agent, room.top, room.size, rand_dir, max_tries=1000)
         front_cell = self.grid.get(*agent.front_pos)
         if front_cell is None or front_cell.type == Type.wall:
             break

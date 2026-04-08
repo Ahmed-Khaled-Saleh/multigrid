@@ -10,6 +10,7 @@ import numpy as np
 
 from numpy.typing import ArrayLike, NDArray as ndarray
 from typing import Any
+from fastcore.utils import patch
 
 from .constants import Color, State, Type
 from multigrid.utils.rendering import (
@@ -199,59 +200,7 @@ class WorldObj(np.ndarray, metaclass=WorldObjMeta):
         """
         self[WorldObj.STATE] = State(value).to_index()
 
-    def can_overlap(self) -> bool:
-        """
-        Can an agent overlap with this?
-        """
-        return self.type == Type.empty
-
-    def can_pickup(self) -> bool:
-        """
-        Can an agent pick this up?
-        """
-        return False
-
-    def can_contain(self) -> bool:
-        """
-        Can this contain another object?
-        """
-        return False
-
-    def toggle(self, env, agent, pos: tuple[int, int]) -> bool:
-        """
-        Toggle the state of this object or trigger an action this object performs.
-
-        Parameters
-        ----------
-        env : MultiGridEnv
-            The environment this object is contained in
-        agent : Agent
-            The agent performing the toggle action
-        pos : tuple[int, int]
-            The (x, y) position of this object in the environment grid
-
-        Returns
-        -------
-        success : bool
-            Whether the toggle action was successful
-        """
-        return False
-
-    def encode(self) -> tuple[int, int, int]:
-        """
-        Encode a 3-tuple description of this object.
-
-        Returns
-        -------
-        type_idx : int
-            The index of the object type
-        color_idx : int
-            The index of the object color
-        state_idx : int
-            The index of the object state
-        """
-        return tuple(self)
-
+    
     @staticmethod
     def decode(type_idx: int, color_idx: int, state_idx: int) -> 'WorldObj' | None:
         """
@@ -269,18 +218,80 @@ class WorldObj(np.ndarray, metaclass=WorldObjMeta):
         arr = np.array([type_idx, color_idx, state_idx])
         return WorldObj.from_array(arr)
 
-    def render(self, img: ndarray[np.uint8]):
-        """
-        Draw the world object.
-
-        Parameters
-        ----------
-        img : ndarray[int] of shape (width, height, 3)
-            RGB image array to render object on
-        """
-        raise NotImplementedError
 
 
+# %% ../../nbs/01d_core.world_object.ipynb #1907aed0
+@patch
+def can_overlap(self: WorldObj) -> bool:
+    """
+    Can an agent overlap with this?
+    """
+    return self.type == Type.empty
+
+@patch
+def can_pickup(self: WorldObj) -> bool:
+    """
+    Can an agent pick this up?
+    """
+    return False
+
+@patch
+def can_contain(self: WorldObj) -> bool:
+    """
+    Can this contain another object?
+    """
+    return False
+
+@patch
+def toggle(self: WorldObj, env, agent, pos: tuple[int, int]) -> bool:
+    """
+    Toggle the state of this object or trigger an action this object performs.
+
+    Parameters
+    ----------
+    env : MultiGridEnv
+        The environment this object is contained in
+    agent : Agent
+        The agent performing the toggle action
+    pos : tuple[int, int]
+        The (x, y) position of this object in the environment grid
+
+    Returns
+    -------
+    success : bool
+        Whether the toggle action was successful
+    """
+    return False
+
+@patch
+def encode(self: WorldObj) -> tuple[int, int, int]:
+    """
+    Encode a 3-tuple description of this object.
+
+    Returns
+    -------
+    type_idx : int
+        The index of the object type
+    color_idx : int
+        The index of the object color
+    state_idx : int
+        The index of the object state
+    """
+    return tuple(self)
+
+
+# %% ../../nbs/01d_core.world_object.ipynb #b75423e3
+@patch
+def render(self: WorldObj, img: ndarray[np.uint8]):
+    """
+    Draw the world object.
+
+    Parameters
+    ----------
+    img : ndarray[int] of shape (width, height, 3)
+        RGB image array to render object on
+    """
+    raise NotImplementedError
 
 # %% ../../nbs/01d_core.world_object.ipynb #d0dcb808
 class Goal(WorldObj):

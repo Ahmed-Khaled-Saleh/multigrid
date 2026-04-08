@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from fastcore.utils import patch
-from .. import MultiGridEnv
+from .base import MultiGridEnv
 from ..core import Grid
 from ..core.constants import Direction
 from ..core.world_object import Goal
@@ -157,28 +157,29 @@ class EmptyEnv(MultiGridEnv):
             success_termination_mode=success_termination_mode,
             **kwargs,
         )
-        
 
-# %% ../../nbs/02b_envs.empty.ipynb #032e8104
+    def _gen_grid(self, width, height):
+        pass
+
+# %% ../../nbs/02b_envs.empty.ipynb #fda40eaa
 @patch
 def _gen_grid(self: EmptyEnv, width, height):
-    """
-    :meta private:
-    """
-    # Create an empty grid
-    self.grid = Grid(width, height)
+        """
+        :meta private:
+        """
+        # Create an empty grid
+        self.grid = Grid(width, height)
 
-    # Generate the surrounding walls
-    self.grid.wall_rect(0, 0, width, height)
+        # Generate the surrounding walls
+        self.grid.wall_rect(0, 0, width, height)
 
-    # Place a goal square in the bottom-right corner
-    self.put_obj(Goal(), width - 2, height - 2)
+        # Place a goal square in the bottom-right corner
+        self.put_obj(Goal(), width - 2, height - 2)
 
-    # Place the agent
-    for agent in self.agents:
-        if self.agent_start_pos is not None and self.agent_start_dir is not None:
-            agent.state.pos = self.agent_start_pos
-            agent.state.dir = self.agent_start_dir
-        else:
-            self.place_agent(agent)
-
+        # Place the agent
+        for agent in self.agents:
+            if self.agent_start_pos is not None and self.agent_start_dir is not None:
+                agent.state.pos = self.agent_start_pos
+                agent.state.dir = self.agent_start_dir
+            else:
+                self.place_agent(agent)

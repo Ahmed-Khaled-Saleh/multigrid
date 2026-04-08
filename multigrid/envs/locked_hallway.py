@@ -8,7 +8,7 @@ from __future__ import annotations
 from math import ceil
 from fastcore.utils import patch
 
-from .. import MultiGridEnv
+from .base import MultiGridEnv
 from ..core.actions import Action
 from ..core.constants import Color, Direction
 from ..core.mission import MissionSpace
@@ -150,7 +150,9 @@ class LockedHallwayEnv(RoomGrid):
         if max_steps is None:
             max_steps = 8 * num_rooms * room_size**2
 
-        super().__init__(
+        # super()
+        RoomGrid.__init__(
+            self= self,
             mission_space=MissionSpace.from_string("unlock all the doors"),
             room_size=room_size,
             num_rows=(num_rooms // 2),
@@ -161,13 +163,17 @@ class LockedHallwayEnv(RoomGrid):
         )
         
 
+    def _gen_grid(self, width, height):
+        pass
+
 # %% ../../nbs/02f_envs.locked_hallway.ipynb #e8188d3d
 @patch
 def _gen_grid(self: LockedHallwayEnv, width, height):
     """
     :meta private:
     """
-    super()._gen_grid(width, height)
+    #super()
+    RoomGrid._gen_grid(self, width, height)
 
     LEFT, HALLWAY, RIGHT = range(3) # columns
     color_sequence = list(Color) * ceil(self.num_rooms / len(Color))
@@ -214,7 +220,8 @@ def reset(self: LockedHallwayEnv, **kwargs):
     :meta private:
     """
     self.unlocked_doors = []
-    return super().reset(**kwargs)
+    # return super().reset(**kwargs)
+    return RoomGrid.reset(self, **kwargs)
 
 # %% ../../nbs/02f_envs.locked_hallway.ipynb #5b8cc1e1
 @patch
@@ -222,7 +229,7 @@ def step(self: LockedHallwayEnv, actions):
     """
     :meta private:
     """
-    observations, rewards, terminations, truncations, infos = super().step(actions)
+    observations, rewards, terminations, truncations, infos = RoomGrid.step(self, actions) #super().step(actions)
 
     # Reward for unlocking doors
     for agent_id, action in actions.items():
