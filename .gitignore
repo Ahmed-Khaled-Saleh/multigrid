@@ -18,6 +18,8 @@ docs/_build/
 /docs/environments/**/*.md
 /docs/environments/**/*.html
 !/docs/environments/**/index.md
+nbs/tutorials/*
+nbs/examples/grid_test*
 
 # Virtual environments
 .env

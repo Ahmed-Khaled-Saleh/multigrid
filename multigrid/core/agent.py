@@ -293,7 +293,7 @@ class Agent:
             'pov': spaces.Box(
                 low=0,
                 high=255,
-                shape=(view_size * 6, view_size * 6, 3),
+                shape=(view_size * TILE_PIXELS, view_size * TILE_PIXELS, 3),
                 dtype=np.uint8,
             ),
             'direction': spaces.Discrete(len(Direction)),

@@ -1,0 +1,5 @@
+_target_: multigrid.envs.BlockedUnlockPickupEnv
+agents: 2
+grid_size: 8
+max_steps: 200
+render_mode: human

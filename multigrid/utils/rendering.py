@@ -43,16 +43,18 @@ def downsample(img: ndarray[np.uint8], factor: int) -> ndarray[np.uint8]:
     assert img.shape[0] % factor == 0
     assert img.shape[1] % factor == 0
 
+
     img = img.reshape(
         [img.shape[0] // factor, factor, img.shape[1] // factor, factor, 3]
     )
-    img = img.mean(axis=3)
-    img = img.mean(axis=1)
+    img = np.round(img
+                   .mean(axis=3)
+                   .mean(axis=1))
 
-    return img
+    return img.astype(np.uint8)
 
 
-# %% ../../nbs/00b_utils.rendering.ipynb #1c5b7f63
+# %% ../../nbs/00b_utils.rendering.ipynb #6deaa3e6
 def fill_coords(
     img: ndarray[np.uint8],
     fn: FilterFunction,
@@ -85,7 +87,11 @@ def fill_coords(
 
 
 # %% ../../nbs/00b_utils.rendering.ipynb #2c491333
-def rotate_fn(fin: FilterFunction, cx: float, cy: float, theta: float) -> FilterFunction:
+def rotate_fn(
+        fin: FilterFunction,
+        cx: float,
+        cy: float,
+        theta: float) -> FilterFunction:
     """
     Rotate a coordinate filter function around a center point by some angle.
 

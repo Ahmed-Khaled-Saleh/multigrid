@@ -19,7 +19,7 @@ print(env)
 while not env.is_done():  # you may need to check TorchRL's done API
     tensordict = env.rand_action(tensordict)  # sample random actions
     tensordict = env.step(tensordict)         # returns a TensorDict
-    # print(tensordict)
+    print(tensordict)
 
 env.close()
 

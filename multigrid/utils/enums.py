@@ -17,20 +17,6 @@ from typing import Any
 # %% auto #0
 __all__ = ['IndexedEnum']
 
-# %% ../../nbs/00a_utils.enums.ipynb #8585f252
-@functools.cache
-def _enum_array(enum_cls: enum.EnumMeta):
-    """
-    Return an array of all values of the given enum.
-
-    Parameters
-    ----------
-    enum_cls : enum.EnumMeta
-        Enum class
-    """
-    return np.array([item.value for item in enum_cls])
-
-
 # %% ../../nbs/00a_utils.enums.ipynb #4b2d5102
 @functools.cache
 def _enum_array(enum_cls: enum.EnumMeta):

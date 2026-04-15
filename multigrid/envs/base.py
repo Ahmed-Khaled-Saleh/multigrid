@@ -390,7 +390,7 @@ def gen_obs(self: MultiGridEnv) -> dict[AgentID, ObsType]:
             agents = self.agents,
             agents_states= self.agent_states,
             agent_view_size = self.agents[0].view_size,
-            tile_size = 6#self.tile_size,
+            tile_size = 32#self.tile_size,
         )
 
     observations = {}
@@ -901,6 +901,16 @@ def render(self: MultiGridEnv):
         return img
 
 
+
+# %% ../../nbs/02a_envs.base.ipynb #0acadf60
+@patch
+def get_layout(self: MultiGridEnv, tile_size = 32):
+    
+    layout = self.grid.render(
+        tile_size= tile_size,
+    )
+
+    return layout
 
 # %% ../../nbs/02a_envs.base.ipynb #116da598
 @patch
