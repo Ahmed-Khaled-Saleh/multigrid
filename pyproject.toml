@@ -25,7 +25,7 @@ dependencies = [
     'notebook',
     'jupyterlab',
     'ipdb',
-    'pygame',
+    # 'pygame',
     'torch',
     'torchvision',
     'lightning',
