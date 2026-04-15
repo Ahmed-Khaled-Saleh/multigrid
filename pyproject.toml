@@ -41,7 +41,7 @@ dependencies = [
     "autorom",
     'gymnasium',
     "gymnasium_robotics[mujoco-py]",
-    "pettingzoo[all]",
+    # "pettingzoo[all]",
     "stable-baselines3[extra]",
     'torchrl>=0.10,<0.12',
     'vmas>=1.3.4',
