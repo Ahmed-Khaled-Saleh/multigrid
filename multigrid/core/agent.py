@@ -11,7 +11,7 @@ from gymnasium import spaces
 from numpy.typing import ArrayLike, NDArray as ndarray
 from fastcore.utils import patch
 
-from .actions import Action
+from .actions import Action, NavigationAction
 from .constants import Color, Direction, Type, TILE_PIXELS
 from .mission import Mission, MissionSpace
 from .world_object import WorldObj
@@ -26,7 +26,7 @@ from multigrid.utils.rendering import (
 
 
 # %% auto #0
-__all__ = ['front_pos', 'AgentState', 'Agent']
+__all__ = ['front_pos', 'AgentState', 'Agent', 'NavigationAgent']
 
 # %% ../../nbs/01e_core.agent.ipynb #0d7799f3
 @functools.cache
@@ -386,3 +386,102 @@ def render(self: Agent, img: ndarray[np.uint8]):
     fill_coords(img, tri_fn, self.state.color.rgb())
 
 
+
+# %% ../../nbs/01e_core.agent.ipynb #e66fca19
+class NavigationAgent(Agent):
+    """
+    Class representing an agent in the environment.
+
+    :Observation Space:
+
+        Observations are dictionaries with the following entries:
+
+            * image : ndarray[int] of shape (view_size, view_size, :attr:`.WorldObj.dim`)
+                Encoding of the agent's view of the environment
+            * direction : int
+                Agent's direction (0: right, 1: down, 2: left, 3: up)
+            * mission : Mission
+                Task string corresponding to the current environment configuration
+
+    :Action Space:
+
+        Actions are discrete integers, as enumerated in :class:`.Action`.
+
+    Attributes
+    ----------
+    index : int
+        Index of the agent in the environment
+    state : AgentState
+        State of the agent
+    mission : Mission
+        Current mission string for the agent
+    action_space : gym.spaces.Discrete
+        Action space for the agent
+    observation_space : gym.spaces.Dict
+        Observation space for the agent
+    """
+
+    def __init__(
+        self,
+        index: int,
+        mission_space: MissionSpace = MissionSpace.from_string('maximize reward'),
+        view_size: int = 7,
+        see_through_walls: bool = False):
+        """
+        Parameters
+        ----------
+        index : int
+            Index of the agent in the environment
+        mission_space : MissionSpace
+            The mission space for the agent
+        view_size : int
+            The size of the agent's view (must be odd)
+        see_through_walls : bool
+            Whether the agent can see through walls
+        """
+        self.index: int = index
+        self.state: AgentState = AgentState()
+        self.mission: Mission = None
+
+        # Number of cells (width and height) in the agent view
+        assert view_size % 2 == 1
+        assert view_size >= 3
+        self.view_size = view_size
+        self.see_through_walls = see_through_walls
+
+        # Observations are dictionaries containing an
+        # encoding of the grid and a textual 'mission' string
+        self.observation_space = spaces.Dict({
+            'image': spaces.Box(
+                low=0,
+                high=255,
+                shape=(view_size, view_size, WorldObj.dim),
+                dtype=int,
+            ),
+            'pov': spaces.Box(
+                low=0,
+                high=255,
+                shape=(view_size * TILE_PIXELS, view_size * TILE_PIXELS, 3),
+                dtype=np.uint8,
+            ),
+            'direction': spaces.Discrete(len(Direction)),
+            'mission': mission_space,
+        })
+
+        # Actions are discrete integer values
+        self.action_space = spaces.Discrete(len(NavigationAction))
+
+    # AgentState Properties
+    color = PropertyAlias(
+        'state', 'color', doc='Alias for :attr:`AgentState.color`.')
+    dir = PropertyAlias(
+        'state', 'dir', doc='Alias for :attr:`AgentState.dir`.')
+    pos = PropertyAlias(
+        'state', 'pos', doc='Alias for :attr:`AgentState.pos`.')
+    terminated = PropertyAlias(
+        'state', 'terminated', doc='Alias for :attr:`AgentState.terminated`.')
+    carrying = PropertyAlias(
+        'state', 'carrying', doc='Alias for :attr:`AgentState.carrying`.')
+
+    
+    

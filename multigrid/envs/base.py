@@ -174,6 +174,7 @@ class MultiGridEnv(gym.Env, RandomMixin, ABC):
                 )
                 agent.state = self.agent_states[i]
                 self.agents.append(agent)
+                
         elif isinstance(agents, Iterable):
             assert {agent.index for agent in agents} == set(range(len(agents)))
             self.num_agents = len(agents)
@@ -686,6 +687,9 @@ def place_obj(
         size = (self.grid.width, self.grid.height)
 
     num_tries = 0
+
+
+    
 
     while True:
         # This is to handle with rare cases where rejection sampling

@@ -21,7 +21,7 @@ from multigrid.utils.rendering import (
 )
 
 # %% auto #0
-__all__ = ['WorldObjMeta', 'WorldObj', 'Goal', 'Floor', 'Lava', 'Wall', 'Door', 'Key', 'Ball', 'Box']
+__all__ = ['WorldObjMeta', 'WorldObj', 'Goal', 'Floor', 'Lava', 'Wall', 'Door', 'Key', 'Ball', 'Box', 'Marker']
 
 # %% ../../nbs/01d_core.world_object.ipynb #2a2bb0ec
 class WorldObjMeta(type):
@@ -645,3 +645,28 @@ class Box(WorldObj):
         # Horizontal slit
         fill_coords(img, point_in_rect(0.16, 0.84, 0.47, 0.53), self.color.rgb())
 
+
+# %% ../../nbs/01d_core.world_object.ipynb #79371bad
+from .world_object import WorldObj
+from ..utils.rendering import fill_coords, point_in_circle
+
+class Marker(WorldObj):
+    """
+    A non-interactive distractor object. Cannot be picked up or overlapped.
+    """
+    def __new__(cls, color: str = Color.purple):
+        return super().__new__(cls, color=color)
+
+    def can_overlap(self) -> bool:
+        return False  # blocks movement like a wall
+
+    def can_pickup(self) -> bool:
+        return False  # cannot be carried
+
+    def render(self, img):
+        # fill_coords(img, point_in_circle(0.5, 0.5, 0.31), self.color.rgb())
+        fill_coords(img, point_in_rect(0.12, 0.88, 0.12, 0.88), self.color.rgb())
+        fill_coords(img, point_in_rect(0.18, 0.82, 0.18, 0.82), (0, 0, 0))
+
+        # Horizontal slit
+        fill_coords(img, point_in_rect(0.16, 0.84, 0.47, 0.53), self.color.rgb())

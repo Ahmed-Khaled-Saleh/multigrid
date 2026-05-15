@@ -3,7 +3,7 @@ import multigrid.envs
 from multigrid.wrappers.external import TorchRLPettingZooWrapper
 from torchrl.envs.libs import pettingzoo
 
-env = gym.make('MultiGrid-Playground-v0', agents=2, render_mode='human')
+env = gym.make('MultiGrid-FindGoal-8x8-v0', agents=2, render_mode='human')
 env = TorchRLPettingZooWrapper(env)
 env = pettingzoo.PettingZooWrapper(
     env=env,
