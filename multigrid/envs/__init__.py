@@ -61,7 +61,7 @@ CONFIGURATIONS = {
     'MultiGrid-Playground-v0': (PlaygroundEnv, {}),
     'MultiGrid-RedBlueDoors-6x6-v0': (RedBlueDoorsEnv, {'size': 6}),
     'MultiGrid-RedBlueDoors-8x8-v0': (RedBlueDoorsEnv, {'size': 8}),
-    'MultiGrid-FindGoal-8x8-v0': (FindGoalEnv, {'size': 8})
+    'MultiGrid-FindGoal-15x15-v0': (FindGoalEnv, {'size': 15})
 }
 
 

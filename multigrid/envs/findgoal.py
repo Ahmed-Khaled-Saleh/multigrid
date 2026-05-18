@@ -50,12 +50,13 @@ class FindGoalEnv(MultiGridEnv):
 
     def __init__(
         self,
+        size: int = 15,
         width: int = 30,
         height: int = 20,
         num_obstacles: int = 25,
         n_clutter: int = 10,
         randomize_goal: bool = True,
-        max_steps: int = 500,
+        max_steps: int = 250,
         joint_reward: bool = False,
         success_termination_mode: str = 'all',
         allow_agent_overlap: bool = False,
@@ -71,6 +72,7 @@ class FindGoalEnv(MultiGridEnv):
 
         super().__init__(
             mission_space="get to the green goal square",
+            grid_size= size,
             width=width,
             height=height,
             max_steps=max_steps,
