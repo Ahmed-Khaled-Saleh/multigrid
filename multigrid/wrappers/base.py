@@ -418,18 +418,6 @@ class GridRecorder(gym.core.Wrapper):
                                        fy=self.video_scale,
                                        interpolation=cv2.INTER_AREA)
 
-            # if self.render_reward and reward_dict is not None:
-            #     to_render = ['rew',
-            #                  *[f'{k[0]+k[-1]}: {v:.3f}' for k, v in
-            #                    reward_dict.items()]
-            #                  ]
-            #     str_spacing = 30
-            #     for i, text_to_render in enumerate(to_render):
-            #         cv2.putText(new_frame, text_to_render,
-            #                     (int(0.8 * new_frame.shape[1]),
-            #                      int(0.1 * new_frame.shape[0]) + (i * str_spacing)),
-            #                     cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
-
             if self.frames is None:
                 self.frames = np.zeros(
                     (self.max_steps, *new_frame.shape), dtype=new_frame.dtype
