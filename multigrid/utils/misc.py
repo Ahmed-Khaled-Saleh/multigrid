@@ -85,12 +85,8 @@ def valid_positions(grid: np.ndarray) -> list[tuple[int, int]]:
     for gy in range(grid.height):
         for gx in range(grid.width):
             
-            if not grid.get(gy, gx):
+            if grid.get(gy, gx) and grid.get(gy, gx).type == 'wall':
                 continue
-
-            if grid.get(gy, gx).type == 'wall':
-                continue
-
             valid.append((gx, gy))
     return valid
 
