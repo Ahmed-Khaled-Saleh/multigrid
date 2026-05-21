@@ -79,14 +79,18 @@ def world_to_grid(wx: float, wy: float, cell_size: float = CELL_SIZE):
 def valid_positions(grid: np.ndarray) -> list[tuple[int, int]]:
     """
     Return a list of valid (gx, gy) positions in the grid.
-    A position is valid if grid[gy, gx] == 0 (not a wall).
+    A position is valid if grid.get(gy, gx).type is not 'wall'.
     """
     valid = []
     for gy in range(grid.height):
         for gx in range(grid.width):
             
-            if grid.get(gy, gx) and grid.get(gy, gx).type == 'wall':
+            if grid.get(gy, gx):
                 continue
+
+            if  grid.get(gy, gx).type == 'wall':
+                continue
+            
             valid.append((gx, gy))
     return valid
 
