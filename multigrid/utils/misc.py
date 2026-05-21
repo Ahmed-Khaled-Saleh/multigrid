@@ -59,11 +59,11 @@ def grid_to_world(gx: int, gy: int, cell_size: float = CELL_SIZE):
     - wx = gx * cell_size           (grid x → world x, same direction)
     - wy = -gy * cell_size          (grid y → world y, FLIPPED because
                                      Blender Y is forward but grid Y is down)
-    - wz = 0.0                      (ground level, agents walk on z=0)
+    - wz = 1.0                      (up-ground level, agents walk on z=1)
     """
-    wx = gx * cell_size
+    wx = -gx * cell_size
     wy = -gy * cell_size   # flip Y
-    wz = 0.0
+    wz = 1.0
     return [wx, wy, wz]
 
 def world_to_grid(wx: float, wy: float, cell_size: float = CELL_SIZE):
