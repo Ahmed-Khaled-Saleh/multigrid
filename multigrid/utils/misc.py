@@ -56,8 +56,8 @@ def grid_to_world(gx: int, gy: int, cell_size: float = CELL_SIZE):
     """
     Map a 2D grid cell (gx, gy) to the 3D world position (wx, wy, wz).
     
-    - wx = gx * cell_size           (grid x → world x, same direction)
-    - wy = -gy * cell_size          (grid y → world y, FLIPPED because
+    - wx = gy * cell_size           (grid x -> world y, same direction)
+    - wy = -gx * cell_size          (grid y -> world x, FLIPPED because
                                      Blender Y is forward but grid Y is down)
     - wz = 1.0                      (up-ground level, agents walk on z=1)
     """
@@ -79,13 +79,13 @@ def world_to_grid(wx: float, wy: float, cell_size: float = CELL_SIZE):
 def valid_positions(grid: np.ndarray) -> list[tuple[int, int]]:
     """
     Return a list of valid (gx, gy) positions in the grid.
-    A position is valid if grid.get(gy, gx).type is not 'wall'.
+    A position is valid if grid.get(gx, gy).type is not 'wall'.
     """
     valid = []
-    for gy in range(grid.height):
-        for gx in range(grid.width):
+    for gx in range(grid.height):
+        for gy in range(grid.width):
             
-            if grid.get(gy, gx) and grid.get(gy, gx).type == 'wall':
+            if grid.get(gx, gy) and grid.get(gx, gy).type == 'wall':
                 continue
             valid.append((gx, gy))
     return valid
