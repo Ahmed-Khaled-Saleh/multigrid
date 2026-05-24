@@ -56,8 +56,8 @@ def grid_to_world(gx: int, gy: int, cell_size: float = CELL_SIZE):
     """
     Map a 2D grid cell (gx, gy) to the 3D world position (wx, wy, wz).
     
-    - wx = gy * cell_size           (grid x -> world y, same direction)
-    - wy = -gx * cell_size          (grid y -> world x, FLIPPED because
+    - wx = gx * cell_size           (grid x -> world y, same direction)
+    - wy = -gy * cell_size          (grid y -> world x, FLIPPED because
                                      Blender Y is forward but grid Y is down)
     - wz = 1.0                      (up-ground level, agents walk on z=1)
     """
