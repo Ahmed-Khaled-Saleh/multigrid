@@ -383,7 +383,7 @@ def handle_actions(
 
 
 
-# %% ../../nbs/02h_envs.find_goal.ipynb #13ddc5bf
+# %% ../../nbs/02h_envs.find_goal.ipynb #5bf9a3f7
 @patch
 def get_goal_state(
     self: FindGoalEnv,
@@ -394,10 +394,11 @@ def get_goal_state(
 ) -> ndarray:
     """
     Returns the goal state RGB image for the given agent.
-    The goal state is being one step away from the goal object,
-    facing it.
+    The goal state is the observation the agent has when standing
+    ON the goal cell — consistent with on_success() which triggers
+    when the agent steps onto the goal.
     """
-    # Find the goal object position
+    # Find goal position
     goal_pos = None
     for x in range(self.grid.width):
         for y in range(self.grid.height):
@@ -411,55 +412,33 @@ def get_goal_state(
     if goal_pos is None:
         raise ValueError("No goal object found in the grid")
 
-    # Four possible positions around the goal (right, down, left, up)
-    # and the direction the agent must face to look at the goal
-    candidate_positions = [
-        (goal_pos + np.array([1, 0]),  Direction.left),   # agent to the right, facing left
-        (goal_pos + np.array([-1, 0]), Direction.right),  # agent to the left, facing right
-        (goal_pos + np.array([0, 1]),  Direction.up),     # agent below, facing up
-        (goal_pos + np.array([0, -1]), Direction.down),   # agent above, facing down
-    ]
+    # The agent stands ON the goal cell.
+    # Direction doesn't affect the terminal condition, but we pick
+    # the direction the agent would most naturally arrive from —
+    # i.e. whatever direction it was travelling when it stepped on.
+    # Since we don't know that at collection time, we try all 4 and
+    # pick the first valid one (or just use Direction.right as default).
+    goal_agent_pos = goal_pos
+    goal_agent_dir = Direction.right  # default — direction doesn't affect termination
 
-    # Pick a valid candidate (inside grid, not a wall)
-    goal_agent_pos = None
-    goal_agent_dir = None
-    for pos, dir in candidate_positions:
-        x, y = pos
-        if 0 <= x < self.grid.width and 0 <= y < self.grid.height:
-            cell = self.grid.get(x, y)
-            if cell is None or isinstance(cell, Goal):
-                goal_agent_pos = pos
-                goal_agent_dir = dir
-                break
-
-    if goal_agent_pos is None:
-        raise ValueError("No valid position adjacent to goal found")
-
-    # Create a temporary agent state at the goal position
-    goal_agent = NavigationAgent(index=agent.index)
-    goal_agent.state.pos = goal_agent_pos
-    goal_agent.state.dir = goal_agent_dir
-    goal_agent.state.color = agent.state.color.name
-
-    # Compute obs grid for this goal agent state
-    # We need to temporarily modify agents_states for gen_obs_grid
+    # Temporarily override agent state
     original_pos = agent.state.pos
     original_dir = agent.state.dir
 
     agent.state.pos = goal_agent_pos
     agent.state.dir = goal_agent_dir
 
-    # Generate the observation image
+    # Generate observation from ON the goal cell
     goal_image = gen_obs_grid_image(
         self.grid,
-        [goal_agent],
-        self.agent_states,  # uses modified agent state
+        [agent],
+        self.agent_states,
         agent_view_size,
         tile_size=tile_size,
         see_through_walls=see_through_walls,
     )[0]
 
-    # Restore original agent state
+    # Restore
     agent.state.pos = original_pos
     agent.state.dir = original_dir
 

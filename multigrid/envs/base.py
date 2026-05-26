@@ -537,6 +537,8 @@ def on_success(
     else:
         agent.state.terminated = True # terminate this agent only
         terminations[agent.index] = True
+        #####fix#######
+        agent.state.pos = np.array([-1, -1]) # move agent out of the grid to prevent further interactions
 
     if self.joint_reward:
         for i in range(self.num_agents):
