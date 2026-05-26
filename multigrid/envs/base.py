@@ -395,13 +395,34 @@ def gen_obs(self: MultiGridEnv) -> dict[AgentID, ObsType]:
         )
 
     observations = {}
+    # for i in range(self.num_agents):
+    #     observations[i] = {
+    #         'image': image[i],
+    #         'pov': rgb[i],
+    #         'direction': direction[i],
+    #         'mission': self.agents[i].mission,
+    #     }
+
     for i in range(self.num_agents):
+        if self.agent_states.terminated[i]:
+            # Return last cached observation unchanged
+            if hasattr(self, '_last_obs') and i in self._last_obs:
+                observations[i] = self._last_obs[i]
+                continue
+
         observations[i] = {
-            'image': image[i],
-            'pov': rgb[i],
+            'image':     image[i],
+            'pov':       rgb[i],
             'direction': direction[i],
-            'mission': self.agents[i].mission,
+            'mission':   self.agents[i].mission,
         }
+
+    # Cache for next call
+    if not hasattr(self, '_last_obs'):
+        self._last_obs = {}
+    for i in observations:
+        self._last_obs[i] = observations[i]
+
 
     return observations
 
