@@ -361,7 +361,7 @@ def step(
     if self.render_mode == 'human':
         self.render()
 
-    return observations, rewards, terminations, truncations, defaultdict(dict)
+    return observations, rewards, terminations, truncations, {'action': None}#defaultdict(dict)
 
 
 

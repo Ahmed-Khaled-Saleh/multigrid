@@ -311,7 +311,7 @@ def step(
     if self.render_mode == 'human':
         self.render()
 
-    return observations, rewards, terminations, truncations, defaultdict(dict)
+    return observations, rewards, terminations, truncations, {'action': None}#defaultdict(dict)
 
 # %% ../../nbs/02h_envs.find_goal.ipynb #715d3532
 @patch
@@ -363,8 +363,23 @@ def handle_actions(
 
             if fwd_obj is None or fwd_obj.can_overlap():
                 if not self.allow_agent_overlap:
-                    agent_present = np.bitwise_and.reduce(
-                        self.agent_states.pos == fwd_pos, axis=1).any()
+                    # agent_present = np.bitwise_and.reduce(
+                    #     self.agent_states.pos == fwd_pos, axis=1).any()
+
+                    # ── Fix: exclude self AND terminated agents ────────────
+                    # Terminated agents are at (-1,-1) but better to be explicit
+                    other_active_positions = [
+                        self.agents[j].state.pos
+                        for j in range(self.num_agents)
+                        if j != i                              # not self
+                        and not self.agents[j].state.terminated  # not terminated
+                    ]
+
+                    agent_present = any(
+                        np.array_equal(pos, fwd_pos)
+                        for pos in other_active_positions
+                    )
+                    
                     if agent_present:
                         continue
 
@@ -385,6 +400,59 @@ def handle_actions(
     return rewards
 
 
+
+# %% ../../nbs/02h_envs.find_goal.ipynb #a46e7f42
+@patch
+def on_success(
+    self: FindGoalEnv,
+    agent: Agent,
+    rewards: dict[AgentID, SupportsFloat],
+    terminations: dict[AgentID, bool]):
+
+    if self.success_termination_mode == 'any':
+        self.agent_states.terminated = True
+        for i in range(self.num_agents):
+            terminations[i] = True
+    else:
+        agent.state.terminated = True
+        terminations[agent.index] = True
+
+        # Cache terminal obs using EXACT same call signature as gen_obs
+        # to guarantee identical results
+        if not hasattr(self, '_last_obs'):
+            self._last_obs = {}
+
+        image_all = gen_obs_grid_encoding(
+            self.grid.state,
+            self.agent_states,
+            self.agents[0].view_size,      # ← same as gen_obs
+            self.agents[0].see_through_walls,  # ← same as gen_obs
+        )
+        rgb_all = gen_obs_grid_image(
+            grid=self.grid,
+            agents=self.agents,            # ← ALL agents, same as gen_obs
+            agents_states=self.agent_states,
+            agent_view_size=self.agents[0].view_size,
+            tile_size=32,
+        )
+
+        self._last_obs[agent.index] = {
+            'image':      image_all[agent.index],  # ← index by agent.index
+            'pov':        rgb_all[agent.index],    # ← index by agent.index
+            'direction':  agent.state.dir,
+            'mission':    agent.mission,
+            'terminated': True,
+        }
+
+        # Move off grid AFTER caching
+        agent.state.pos = np.array([-1, -1])
+
+    if self.joint_reward:
+        for i in range(self.num_agents):
+            rewards[i] = self._reward()
+    else:
+        rewards[agent.index] = self._reward()
+        
 
 # %% ../../nbs/02h_envs.find_goal.ipynb #5dde4775
 @patch
