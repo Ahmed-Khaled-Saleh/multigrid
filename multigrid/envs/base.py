@@ -395,33 +395,13 @@ def gen_obs(self: MultiGridEnv) -> dict[AgentID, ObsType]:
         )
 
     observations = {}
-    # for i in range(self.num_agents):
-    #     observations[i] = {
-    #         'image': image[i],
-    #         'pov': rgb[i],
-    #         'direction': direction[i],
-    #         'mission': self.agents[i].mission,
-    #     }
-
     for i in range(self.num_agents):
-        if self.agent_states.terminated[i]:
-            # Return last cached observation unchanged
-            if hasattr(self, '_last_obs') and i in self._last_obs:
-                observations[i] = self._last_obs[i]
-                continue
-
         observations[i] = {
-            'image':     image[i],
-            'pov':       rgb[i],
+            'image': image[i],
+            'pov': rgb[i],
             'direction': direction[i],
-            'mission':   self.agents[i].mission,
+            'mission': self.agents[i].mission,
         }
-
-    # Cache for next call
-    if not hasattr(self, '_last_obs'):
-        self._last_obs = {}
-    for i in observations:
-        self._last_obs[i] = observations[i]
 
 
     return observations
@@ -558,8 +538,8 @@ def on_success(
     else:
         agent.state.terminated = True # terminate this agent only
         terminations[agent.index] = True
-        #####fix#######
-        agent.state.pos = np.array([-1, -1]) # move agent out of the grid to prevent further interactions
+        # #####fix: implemented now inside on_success in FindGoal env#######
+        # agent.state.pos = np.array([-1, -1]) # move agent out of the grid to prevent further interactions
 
     if self.joint_reward:
         for i in range(self.num_agents):

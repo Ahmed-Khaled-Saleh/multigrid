@@ -161,6 +161,9 @@ class FindGoalEnv(MultiGridEnv):
 
         return goal_pos
 
+    def reset(self, seed=None, **kwargs):
+        self._last_obs = {}   # clear frozen obs cache
+        return super().reset(seed=seed, **kwargs)
 
 
 # %% ../../nbs/02h_envs.find_goal.ipynb #fc33fe01
@@ -380,6 +383,61 @@ def handle_actions(
             raise ValueError(f"Unknown action: {action}")
 
     return rewards
+
+
+
+# %% ../../nbs/02h_envs.find_goal.ipynb #5dde4775
+@patch
+def gen_obs(self: FindGoalEnv) -> dict[AgentID, ObsType]:
+    """
+    Generate observations for each agent (partially observable, low-res encoding).
+
+    Returns
+    -------
+    observations : dict[AgentID, ObsType]
+        Mapping from agent ID to observation dict, containing:
+            * 'image': partially observable view of the environment
+            * 'direction': agent's direction / orientation (acting as a compass)
+            * 'mission': textual mission string (instructions for the agent)
+    """
+    direction = self.agent_states.dir
+    image = gen_obs_grid_encoding(
+        self.grid.state,
+        self.agent_states,
+        self.agents[0].view_size,
+        self.agents[0].see_through_walls,
+    )
+    rgb = gen_obs_grid_image(
+            grid= self.grid,
+            agents = self.agents,
+            agents_states= self.agent_states,
+            agent_view_size = self.agents[0].view_size,
+            tile_size = 32#self.tile_size,
+        )
+
+    observations = {}
+    for i in range(self.num_agents):
+        if self.agent_states.terminated[i]:
+            # Return last cached observation unchanged
+            if hasattr(self, '_last_obs') and i in self._last_obs:
+                observations[i] = self._last_obs[i]
+                continue
+
+        observations[i] = {
+            'image':     image[i],
+            'pov':       rgb[i],
+            'direction': direction[i],
+            'mission':   self.agents[i].mission,
+        }
+
+    # Cache for next call
+    if not hasattr(self, '_last_obs'):
+        self._last_obs = {}
+    for i in observations:
+        self._last_obs[i] = observations[i]
+
+
+    return observations
 
 
 
