@@ -433,7 +433,7 @@ def on_success(
             agents=self.agents,            # ← ALL agents, same as gen_obs
             agents_states=self.agent_states,
             agent_view_size=self.agents[0].view_size,
-            tile_size=32,
+            tile_size=self.tile_size,
         )
 
         self._last_obs[agent.index] = {
@@ -480,7 +480,7 @@ def gen_obs(self: FindGoalEnv) -> dict[AgentID, ObsType]:
             agents = self.agents,
             agents_states= self.agent_states,
             agent_view_size = self.agents[0].view_size,
-            tile_size = 32#self.tile_size,
+            tile_size = self.tile_size,
         )
 
     observations = {}
@@ -560,7 +560,7 @@ def get_goal_state(
         [agent],
         self.agent_states,
         agent_view_size,
-        tile_size=tile_size,
+        tile_size=self.tile_size,
         see_through_walls=see_through_walls,
     )[0]
 

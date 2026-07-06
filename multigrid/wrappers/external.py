@@ -25,7 +25,18 @@ from .base import OneHotObsWrapper
 
 
 # %% auto #0
-__all__ = ['PettingZooWrapper', 'to_pettingzoo_env', 'TorchRLPettingZooWrapper', 'RLlibWrapper', 'to_rllib_env']
+__all__ = ['AgentID', 'ObsType', 'ActionType', 'PettingZooWrapper', 'to_pettingzoo_env', 'TorchRLPettingZooWrapper',
+           'RLlibWrapper', 'to_rllib_env']
+
+# %% ../../nbs/03b_wrappers.external.ipynb #53cd2e2e
+from typing import Any, TypeVar
+import numpy as np
+
+# %% ../../nbs/03b_wrappers.external.ipynb #4e330534
+# ActionType = TypeVar("ActionType")
+AgentID = int
+ObsType = dict[str, Any]
+ActionType = Any
 
 # %% ../../nbs/03b_wrappers.external.ipynb #b6c1578d
 class PettingZooWrapper(ParallelEnv):
@@ -36,15 +47,39 @@ class PettingZooWrapper(ParallelEnv):
 
     def __init__(self, env: MultiGridEnv):
         self.env = env
-        self.reset = self.env.reset
-        self.step = self.env.step
-        self.render = self.env.render
-        self.close = self.env.close
+        # self.reset = self.env.reset
+        # self.step = self.env.step
+        # self.render = self.env.render
+        # self.close = self.env.close
         self.metadata = {}
 
     # @property
     def is_done(self) -> bool:
         return self.env.unwrapped.is_done()
+    
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict | None = None,
+    ) -> tuple[dict[AgentID, ObsType], dict[AgentID, dict]]:
+        return self.env.reset(seed=seed, options=options)
+    
+    def step(
+        self, actions: dict[AgentID, ActionType]
+    ) -> tuple[
+        dict[AgentID, ObsType],
+        dict[AgentID, float],
+        dict[AgentID, bool],
+        dict[AgentID, bool],
+        dict[AgentID, dict[str, Any]],
+    ]:
+        return self.env.step(actions)
+    
+    def render(self) -> None | np.ndarray | str | list:
+        return self.env.render()
+    
+    def close(self) -> None:
+        return self.env.close()
     
     @property
     def agents(self) -> list[AgentID]:
